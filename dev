@@ -1,0 +1,5 @@
+[webserver]
+web01
+
+[control]
+ansible-control ansible_connection=local

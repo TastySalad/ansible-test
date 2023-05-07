@@ -1,0 +1,36 @@
+---
+  - hosts: web01
+    become: True
+    tasks:
+    
+    - name: make sure pip2 is abesnt
+      ansible.builtin.yum:
+        name: python-pip
+        state: absent
+        update_cache: yes
+
+    - name: install all of the required packages
+      ansible.builtin.yum:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes
+      with_items:
+        - epel-release # Important for pip
+        - python3
+        - python3-pip
+        - httpd
+    
+    - name: install pip deps
+      ansible.builtin.pip:
+        name: "{{ item }}"
+        state: latest
+        executable: pip3
+      with_items:
+        - flask
+
+    - name: services
+      service:
+        name: "{{ item }}"
+        state: started
+      with_items:
+        - httpd
