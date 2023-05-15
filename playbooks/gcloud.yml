@@ -21,8 +21,9 @@
       register: instance_info
 
     - name: Add IP addresses to /etc/hosts
+      become: yes
       lineinfile:
-        path: /home/sharel/ansible/hosts
+        path: /etc/hosts
         regexp: '{{ item.name }} (?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
         line: "{{ item.name }} {{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
       loop: "{{ instance_info['resources'] }}"
