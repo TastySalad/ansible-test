@@ -1,0 +1,27 @@
+- name: Check if GCP instance already exists
+  gcp_compute_instance_info:
+    project: "{{ project }}"
+    auth_kind: "{{ auth_kind }}"
+    service_account_file: "{{ service_account_file }}"
+    zone: "{{ zone }}"
+    name: "{{ item }}"
+  with_items: "{{ groups[group_name] }}"
+  register: existing_instances
+  ignore_errors: true
+
+- name: Create GCP instances from template
+  gcp_compute_instance:
+    project: "{{ project }}"
+    auth_kind: "{{ auth_kind }}"
+    service_account_file: "{{ service_account_file }}"
+    zone: "{{ zone }}"
+    name: "{{ item }}"
+    source_instance_template: "{{ group_name }}"
+    metadata:
+      ssh-keys: "ansible:{{ authorized_keys | join('\nansible:') }}"
+  with_items: "{{ groups[group_name] }}"
+  when: item not in existing_instances.results | map(attribute='name') | list
+
+- name: Display created instance details
+  debug:
+    var: instances

@@ -1,40 +1,17 @@
 - name: Create and inject authorized keys into GCP instances
-  hosts: all:!control
+  hosts: control
   gather_facts: false
   vars:
     project: ansible-testing-385415
     auth_kind: serviceaccount
     service_account_file: /home/sharel/ansible-testing-creds.json
     zone: europe-north1-a
-    instance_template: "{{ inventory_group_name }}-instance-template"
     authorized_keys:
       - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrcyNCXOBEqenNlUuFxYKPergd5tlqJEVnjkn/v4KQg069Cfkx3MXJ1OqdyOejCa8HWGdoAwmWJFimNVE/AQWVVxURJ/V4sofVXGHqttFZ5WIm86sngbAHolIr0qO3/cZ+476VFxqc9adzbwR4+IBHhKjcLhUOfl6vlPHQNyHVFu/Q/eKKuZwAykyyJ3c+VdV7hymFciyWXmqsClE71KAGmZZ6/FYOieJmqvSHB19j1M+DrbtYVK/9ckBRB1LE1k+v+Gr5ovZn2zQ6q48myeIbNZAs3uaTbABreln+L8RKzbXF8RrnlRNxFsq6amvihMLsIq7jMXOAh0gVqC+b2PHh sharel@ansible-control"
 
   tasks:
-    - name: Check if GCP instance already exists
-      gcp_compute_instance_info:
-        project: "{{ project }}"
-        auth_kind: "{{ auth_kind }}"
-        service_account_file: "{{ service_account_file }}"
-        zone: "{{ zone }}"
-        name: "{{ item }}"
-      with_items: "{{ groups[inventory_group_name] }}"
-      register: existing_instances
-      ignore_errors: true
-
     - name: Create GCP instances from template
-      gcp_compute_instance:
-        project: "{{ project }}"
-        auth_kind: "{{ auth_kind }}"
-        service_account_file: "{{ service_account_file }}"
-        zone: "{{ zone }}"
-        name: "{{ item }}"
-        source_instance_template: "{{ instance_template }}"
-        metadata:
-          ssh-keys: "ansible:{{ authorized_keys | join('\nansible:') }}"
-      with_items: "{{ groups[inventory_group_name] }}"
-      when: item not in existing_instances.results | map(attribute='name') | list
-
-    - name: Display created instance details
-      debug:
-        var: instances
+      include_tasks: create_instance_from_template.yml
+      loop: "{{ groups.keys() | difference(['control']) }}"
+      loop_control:
+        loop_var: group_name
