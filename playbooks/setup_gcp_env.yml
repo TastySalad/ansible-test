@@ -17,9 +17,6 @@
         auth_kind: "{{ auth_kind }}"
         service_account_file: "{{ service_account_file }}"
         zone: "{{ zone }}"
-        filters:
-          - name: "{{ item }}"
-      with_items: "{{ groups.keys() | difference(['control']) }}"
       register: existing_instances
       ignore_errors: true
 
