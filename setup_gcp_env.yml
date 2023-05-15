@@ -1,0 +1,37 @@
+- name: Create GCP instances from template
+  hosts: all
+  gather_facts: false
+  vars:
+    project: ansible-testing-385415
+    auth_kind: serviceaccount
+    service_account_file: /home/sharel/ansible-testing-creds.json
+    zone: europe-north1-a
+
+  tasks:
+    - name: Check if GCP instance already exists
+      gcp_compute_instance_info:
+        project: "{{ project }}"
+        auth_kind: "{{ auth_kind }}"
+        service_account_file: "{{ service_account_file }}"
+        zone: "{{ zone }}"
+        name: "{{ item }}"
+      with_items: "{{ groups[inventory_hostname] }}"
+      register: existing_instances
+      ignore_errors: true
+      when: inventory_hostname != "control"
+
+    - name: Create GCP instance from template
+      gcp_compute_instance_template:
+        project: "{{ project }}"
+        auth_kind: "{{ auth_kind }}"
+        service_account_file: "{{ service_account_file }}"
+        zone: "{{ zone }}"
+        name: "{{ item }}"
+        source_instance_template: "{{ inventory_hostname }}"
+      with_items: "{{ groups[inventory_hostname] }}"
+      when: item not in existing_instances.results | map(attribute='name') | list
+      when: inventory_hostname != "control"
+
+    - name: Display created instance details
+      debug:
+        var: instances
