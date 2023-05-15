@@ -9,4 +9,4 @@
     metadata: '{"ssh-keys":"ansible:{{ authorized_key }}"}'
 
   with_items: "{{ groups[group_name] }}"
-  when: "'gce-' + item not in existing_instances.instances | map(attribute='name') | list"
+  when: "existing_instances is defined and item not in existing_instances.results | map(attribute='name') | list"
