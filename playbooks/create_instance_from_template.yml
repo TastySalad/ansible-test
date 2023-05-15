@@ -6,16 +6,7 @@
     zone: "{{ zone }}"
     name: "{{ item }}"
     source_instance_template: "{{ group_name }}"
+    metadata: '{"ssh-keys":"ansible:{{ authorized_key }}"}'
+
   with_items: "{{ groups[group_name] }}"
   when: "'gce-' + item not in existing_instances.results | map(attribute='name') | list"
-
-- name: Inject authorized keys into GCP instances
-  gcp_compute_project_metadata:
-    project: "{{ project }}"
-    auth_kind: "{{ auth_kind }}"
-    service_account_file: "{{ service_account_file }}"
-    global_state: present
-    items:
-      - key: "ssh-keys"
-        value: "ansible:{{ authorized_keys | join('\nansible:') }}"
-        sshKeys: true
