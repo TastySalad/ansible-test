@@ -10,6 +10,18 @@
       - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrcyNCXOBEqenNlUuFxYKPergd5tlqJEVnjkn/v4KQg069Cfkx3MXJ1OqdyOejCa8HWGdoAwmWJFimNVE/AQWVVxURJ/V4sofVXGHqttFZ5WIm86sngbAHolIr0qO3/cZ+476VFxqc9adzbwR4+IBHhKjcLhUOfl6vlPHQNyHVFu/Q/eKKuZwAykyyJ3c+VdV7hymFciyWXmqsClE71KAGmZZ6/FYOieJmqvSHB19j1M+DrbtYVK/9ckBRB1LE1k+v+Gr5ovZn2zQ6q48myeIbNZAs3uaTbABreln+L8RKzbXF8RrnlRNxFsq6amvihMLsIq7jMXOAh0gVqC+b2PHh sharel@ansible-control"
 
   tasks:
+    - name: Check if GCP instance already exists
+      gcp_compute_instance_info:
+        project: "{{ project }}"
+        auth_kind: "{{ auth_kind }}"
+        service_account_file: "{{ service_account_file }}"
+        zone: "{{ zone }}"
+        filters:
+          - name: "{{ item }}"
+      with_items: "{{ groups.keys() | difference(['control']) }}"
+      register: existing_instances
+      ignore_errors: true
+
     - name: Create GCP instances from template
       include_tasks: create_instance_from_template.yml
       loop: "{{ groups.keys() | difference(['control']) }}"
