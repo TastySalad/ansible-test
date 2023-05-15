@@ -1,0 +1,30 @@
+- hosts: localhost
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: install pip deps
+      become: yes
+      ansible.builtin.pip:
+        name: "{{ item }}"
+        state: latest
+        executable: pip3
+      with_items:
+        - requests
+        - google-auth
+
+    - name: Get IP addresses of GCP instances
+      gcp_compute_instance_info:
+        project: ansible-testing-385415
+        auth_kind: serviceaccount
+        service_account_file: /home/sharel/ansible-testing-creds.json
+        zone: europe-north1-a
+      register: instance_info
+
+    - name: Add IP addresses to /etc/hosts
+      lineinfile:
+        path: /home/sharel/ansible/hosts
+        regexp: '{{ item.name }} (?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
+        line: "{{ item.name }} {{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+      loop: "{{ instance_info['resources'] }}"
+      loop_control:
+        loop_var: item
