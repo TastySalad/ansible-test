@@ -1,5 +1,5 @@
 - name: Create GCP instance from template
-  gcp_compute_instance_from_template:
+  gcp_compute_instance:
     project: "{{ project }}"
     auth_kind: "{{ auth_kind }}"
     service_account_file: "{{ service_account_file }}"
