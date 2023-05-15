@@ -2,6 +2,7 @@
   hosts: control
   gather_facts: false
   vars:
+    ansible_python_interpreter: /usr/bin/python3
     project: ansible-testing-385415
     auth_kind: serviceaccount
     service_account_file: /home/sharel/ansible-testing-creds.json
