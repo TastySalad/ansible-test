@@ -12,7 +12,7 @@
 
   tasks:
     - name: Check if GCP instance already exists
-      gcp_compute_instance_fact:
+      gcp_compute_instance_facts:
         project: "{{ project }}"
         auth_kind: "{{ auth_kind }}"
         service_account_file: "{{ service_account_file }}"
