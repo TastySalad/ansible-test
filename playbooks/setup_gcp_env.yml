@@ -22,24 +22,14 @@
       register: existing_instances
       ignore_errors: true
 
-    - name: Create GCP instance from template
-      gcp_compute_instance_from_template:
-        project: "{{ project }}"
-        auth_kind: "{{ auth_kind }}"
-        service_account_file: "{{ service_account_file }}"
-        zone: "{{ zone }}"
-        name: "{{ item }}"
-        source_instance_template: "{{ instance_template }}"
-      with_items: "{{ groups[inventory_group_name] }}"
-      when: item not in existing_instances.results | map(attribute='name') | list
-
-    - name: Inject authorized keys
+    - name: Create GCP instances from template
       gcp_compute_instance:
         project: "{{ project }}"
         auth_kind: "{{ auth_kind }}"
         service_account_file: "{{ service_account_file }}"
         zone: "{{ zone }}"
         name: "{{ item }}"
+        source_instance_template: "{{ instance_template }}"
         metadata:
           ssh-keys: "ansible:{{ authorized_keys | join('\nansible:') }}"
       with_items: "{{ groups[inventory_group_name] }}"
